@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'
+        cache: 'pnpm'
+
+    - name: Install pnpm
+      run: npm install -g pnpm
+
+    - name: Add pnpm to PATH
+      run: echo "PATH=$(npm bin -g):$PATH" >> $GITHUB_ENV
+
+    - name: Verify pnpm installation
+      run: pnpm --version
+
+    - name: Install dependencies
+      run: |
+        pnpm install
+        pnpm add argon2 drizzle-orm pg pino pino-pretty zennv zod jsonwebtoken fastify-zod fastify-guard fastify
+        pnpm add zod-to-json-schema @types/jsonwebtoken typescript tsx drizzle-kit @types/pg -D
+
+    - name: Initialize TypeScript
+      run: npx tsc --init
+
+    - name: Build project
+      run: pnpm build
+
+    - name: Run tests
+      run: pnpm test
